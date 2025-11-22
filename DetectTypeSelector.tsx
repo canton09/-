@@ -17,7 +17,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Fix: Import React to provide JSX type definitions.
 import {useAtom} from 'jotai';
 import React from 'react';
 import {DetectTypeAtom, HoverEnteredAtom} from './atoms';
@@ -25,15 +24,15 @@ import {DetectTypes} from './Types';
 
 const TYPE_LABELS: Record<string, string> = {
   '2D bounding boxes': '2D 边界框',
-  'Segmentation masks': '分割掩码',
+  'Segmentation masks': '语义分割',
   'Points': '关键点',
 };
 
 export function DetectTypeSelector() {
   return (
-    <div className="flex flex-col flex-shrink-0">
-      <div className="mb-3 uppercase">模式选择：</div>
-      <div className="flex flex-col gap-3">
+    <div className="flex flex-col h-full">
+      <div className="mb-2 text-xs font-bold text-[var(--text-color-secondary)] tracking-widest uppercase">分析模式 / MODE</div>
+      <div className="grid grid-cols-3 md:flex md:flex-col gap-2">
         {['2D bounding boxes', 'Segmentation masks', 'Points'].map((label) => (
           <SelectOption key={label} label={label} displayLabel={TYPE_LABELS[label]} />
         ))}
@@ -46,18 +45,19 @@ const SelectOption: React.FC<{label: string; displayLabel: string}> = ({label, d
   const [detectType, setDetectType] = useAtom(DetectTypeAtom);
   const [, setHoverEntered] = useAtom(HoverEnteredAtom);
 
+  const isActive = detectType === label;
+
   return (
     <button
-      className={`py-6 items-center bg-transparent text-center gap-3`}
+      className={`py-2 px-2 md:py-3 text-xs md:text-sm items-center justify-center gap-2 flex md:justify-start ${isActive ? 'active' : 'opacity-60 hover:opacity-100'}`}
       style={{
-        borderColor: detectType === label ? 'var(--accent-color)' : undefined,
-        backgroundColor:
-          detectType === label ? 'var(--border-color)' : undefined,
+         minHeight: '36px'
       }}
       onClick={() => {
         setHoverEntered(false);
         setDetectType(label as DetectTypes);
       }}>
+      <div className={`w-1.5 h-1.5 rounded-sm ${isActive ? 'bg-[var(--accent-color)] shadow-[0_0_5px_var(--accent-color)]' : 'bg-[var(--text-color-secondary)]'}`}></div>
       {displayLabel}
     </button>
   );

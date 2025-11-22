@@ -161,7 +161,7 @@ export function Content() {
 
 
   return (
-    <div ref={containerRef} className="w-full h-full relative flex items-center justify-center bg-black/5">
+    <div ref={containerRef} className="w-full h-full relative flex items-center justify-center">
       {isLiveStreamMode ? (
           <video
             id="live-video-feed"
@@ -295,7 +295,7 @@ export function Content() {
           boundingBoxes2D.map((box, i) => (
             <div
               key={i}
-              className={`absolute bbox border-2 border-[#3B68FF] ${i === hoveredBox ? 'reveal' : ''}`}
+              className={`absolute bbox border-2 border-[var(--accent-color)] ${i === hoveredBox ? 'reveal' : ''}`}
               style={{
                 transformOrigin: '0 0',
                 top: box.y * 100 + '%',
@@ -303,7 +303,7 @@ export function Content() {
                 width: box.width * 100 + '%',
                 height: box.height * 100 + '%',
               }}>
-              <div className="bg-[#3B68FF] text-white absolute left-0 top-0 text-sm px-1">
+              <div className="bg-[var(--accent-color)] text-black font-bold absolute left-0 top-0 text-xs px-1 truncate max-w-full">
                 {box.label}
               </div>
             </div>
@@ -312,7 +312,7 @@ export function Content() {
           boundingBoxMasks.map((box, i) => (
             <div
               key={i}
-              className={`absolute bbox border-2 border-[#3B68FF] ${i === hoveredBox ? 'reveal' : ''}`}
+              className={`absolute bbox border-2 border-[var(--accent-color)] ${i === hoveredBox ? 'reveal' : ''}`}
               style={{
                 transformOrigin: '0 0',
                 top: box.y * 100 + '%',
@@ -322,7 +322,7 @@ export function Content() {
               }}>
               <BoxMask box={box} index={i} />
               <div className="w-full top-0 h-0 absolute">
-                <div className="bg-[#3B68FF] text-white absolute -left-[2px] bottom-0 text-sm px-1">
+                <div className="bg-[var(--accent-color)] text-black font-bold absolute -left-[2px] bottom-0 text-xs px-1 truncate max-w-full">
                   {box.label}
                 </div>
               </div>
@@ -334,15 +334,15 @@ export function Content() {
             return (
               <div
                 key={i}
-                className="absolute bg-red"
+                className="absolute"
                 style={{
                   left: `${point.point.x * 100}%`,
                   top: `${point.point.y * 100}%`,
                 }}>
-                <div className="absolute bg-[#3B68FF] text-center text-white text-xs px-1 bottom-4 rounded-sm -translate-x-1/2 left-1/2">
+                <div className="absolute bg-[var(--accent-color)] text-black font-bold text-center text-xs px-1 bottom-3 rounded-sm -translate-x-1/2 left-0 whitespace-nowrap shadow-lg">
                   {point.label}
                 </div>
-                <div className="absolute w-4 h-4 bg-[#3B68FF] rounded-full border-white border-[2px] -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute w-3 h-3 bg-[var(--accent-color)] rounded-full border border-white shadow-[0_0_10px_var(--accent-color)] -translate-x-1/2 -translate-y-1/2"></div>
               </div>
             );
           })}
@@ -383,7 +383,7 @@ function BoxMask({
           const data = pixels.data;
           for (let i = 0; i < data.length; i += 4) {
             // alpha from mask
-            data[i + 3] = data[i];
+            data[i + 3] = data[i] * 0.6; // Make masks slightly transparent
             // color from palette
             data[i] = rgb[0];
             data[i + 1] = rgb[1];
@@ -399,7 +399,7 @@ function BoxMask({
     <canvas
       ref={canvasRef}
       className="absolute top-0 left-0 w-full h-full"
-      style={{opacity: 0.5}}
+      style={{opacity: 0.8}}
     />
   );
 }

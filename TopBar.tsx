@@ -30,38 +30,36 @@ export function TopBar() {
   const [, setHoverEntered] = useAtom(HoverEnteredAtom);
 
   return (
-    <div className="flex w-full items-center px-3 py-2 border-b justify-between">
-      <div className="flex gap-3 items-center">
-        <button
-          onClick={() => {
-            resetState();
-          }}
-          className="!p-0 !border-none underline bg-transparent"
-          style={{
-            minHeight: '0',
-          }}>
-          <div>重置会话</div>
-        </button>
+    <div className="flex shrink-0 w-full items-center px-4 py-3 border-b border-[var(--border-color)] justify-between bg-[var(--bg-panel)] backdrop-blur-md z-30">
+      <div className="flex gap-4 items-center">
+         <div className="flex flex-col">
+            <h1 className="text-[var(--accent-color)] font-bold tracking-widest uppercase text-sm glow-text">Gemini Spatial</h1>
+            <div className="text-[10px] text-[var(--text-color-secondary)] tracking-widest">SYSTEM ONLINE</div>
+         </div>
       </div>
-      <div className="flex gap-3 items-center">
-        {detectType === '2D bounding boxes' ||
-        detectType === 'Segmentation masks' ? (
-          <div>
-            <label className="flex items-center gap-2 px-3 select-none whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={revealOnHover}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setHoverEntered(false);
-                  }
-                  setRevealOnHoverMode(e.target.checked);
-                }}
-              />
-              <div>悬停显示</div>
-            </label>
-          </div>
-        ) : null}
+
+      <div className="flex gap-4 items-center">
+        <button
+          onClick={() => resetState()}
+          className="!p-0 !min-h-0 !border-none bg-transparent text-[10px] text-[var(--text-color-secondary)] hover:text-white tracking-wider uppercase">
+          [ Reset Session ]
+        </button>
+        
+        {(detectType === '2D bounding boxes' || detectType === 'Segmentation masks') && (
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <div className={`w-2 h-2 rounded-full ${revealOnHover ? 'bg-[var(--accent-color)] shadow-[0_0_5px_var(--accent-color)]' : 'bg-gray-600'}`}></div>
+            <input
+              type="checkbox"
+              className="hidden"
+              checked={revealOnHover}
+              onChange={(e) => {
+                if (e.target.checked) setHoverEntered(false);
+                setRevealOnHoverMode(e.target.checked);
+              }}
+            />
+            <span className="text-[10px] uppercase tracking-wide text-[var(--text-color-secondary)] group-hover:text-[var(--accent-color)]">Hover Reveal</span>
+          </label>
+        )}
       </div>
     </div>
   );

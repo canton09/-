@@ -44,6 +44,7 @@ import {DetectTypes} from './Types';
 import {getSvgPathFromStroke, loadImage} from './utils';
 
 const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+
 export function Prompt() {
   const [temperature, setTemperature] = useAtom(TemperatureAtom);
   const [, setBoundingBoxes2D] = useAtom(BoundingBoxes2DAtom);
@@ -66,15 +67,12 @@ export function Prompt() {
   const [, setResponseJson] = useAtom(ResponseJsonAtom);
   const [responseTime, setResponseTime] = useState<string | null>(null);
   
-  // Ref to track loading state in intervals
   const isLoadingRef = useRef(isLoading);
   useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
 
-  // Ref to track rate limits
   const rateLimitHitRef = useRef(false);
 
   const is2d = detectType === '2D bounding boxes';
-
   const currentModel = selectedModel;
 
   const get2dPrompt = () =>
@@ -88,7 +86,6 @@ export function Prompt() {
   };
 
   async function handleSend() {
-    // Prevent overlapping requests in all modes to avoid 429 errors
     if (isLoadingRef.current) return;
     
     setIsLoading(true);
@@ -113,7 +110,6 @@ export function Prompt() {
             copyCanvas.height = video.videoHeight * scale;
             ctx.drawImage(video, 0, 0, copyCanvas.width, copyCanvas.height);
         } else {
-            // Video not ready
             setIsLoading(false);
             return;
         }
@@ -124,14 +120,12 @@ export function Prompt() {
         copyCanvas.height = image.height * scale;
         ctx.drawImage(image, 0, 0, image.width * scale, image.height * scale);
       } else {
-        // Should not happen with disabled button, but we'll see
         setIsLoading(false);
         return;
       }
       
       let mimeType = 'image/png';
       if (isLiveStreamMode) {
-          // Use JPEG with 50% quality for live stream to speed up transmission
           mimeType = 'image/jpeg';
           activeDataURL = copyCanvas.toDataURL(mimeType, 0.5);
       } else {
@@ -139,7 +133,6 @@ export function Prompt() {
       }
 
       if (lines.length > 0 && !isLiveStreamMode) {
-        // Only draw lines on static images for now
         for (const line of lines) {
           const p = new Path2D(
             getSvgPathFromStroke(
@@ -173,7 +166,6 @@ export function Prompt() {
       const model = currentModel;
 
       let setThinkingBudgetZero = !isThinkingEnabled;
-      // Force thinking to 0 in live mode for speed unless explicitly enabled and user knows what they are doing
       if (isLiveStreamMode && !isThinkingEnabled) {
           setThinkingBudgetZero = true;
       }
@@ -275,77 +267,54 @@ export function Prompt() {
           },
         );
         setHoverEntered(false);
-        // sort largest to smallest
         const sortedBoxes = formattedBoxes.sort(
           (a: any, b: any) => b.width * b.height - a.width * a.height,
         );
         setBoundingBoxMasks(sortedBoxes);
       }
       
-      // Request successful, reset backoff
       rateLimitHitRef.current = false;
 
     } catch (error: any) {
       console.error('Error processing request:', error);
       const errorMessage = error.message || '';
       
-      // Check for rate limit error specifically
       if (errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
-          rateLimitHitRef.current = true; // Trigger backoff
+          rateLimitHitRef.current = true;
           if (!isLiveStreamMode) {
-            alert('您已超出 API 配额 (429 RESOURCE_EXHAUSTED)。请稍后重试。');
-          } else {
-             console.warn("Rate limit hit in live mode. Throttling...");
+            alert('API Quota Exceeded (429). Retrying automatically in live mode.');
           }
       } else if (!isLiveStreamMode) {
         setResponseJson(
-            JSON.stringify(
-            {
-                error: '处理响应时发生错误。',
-                details: errorMessage,
-            },
-            null,
-            2,
-            ),
-        );
-        alert(
-            `发生错误。请重试。\n\n详情：${errorMessage}`,
+            JSON.stringify({error: 'Error', details: errorMessage}, null, 2)
         );
       }
     } finally {
       const endTime = performance.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
       if (!isLiveStreamMode) {
-        setResponseTime(`响应时间：${duration}s`);
+        setResponseTime(`${duration}s`);
       }
       setIsLoading(false);
     }
   }
 
-  // Auto-trigger loop for Live Stream Mode
   useEffect(() => {
-    // Fix: Use ReturnType<typeof setTimeout> instead of NodeJS.Timeout to avoid namespace errors in environments without Node types.
     let timeoutId: ReturnType<typeof setTimeout>;
-
     const loop = () => {
         if (isLiveStreamMode && !isLoadingRef.current) {
             handleSend();
         }
-        // Schedule next check
-        // Dynamic delay: 6000ms normally, 20000ms if we hit a rate limit
         const delay = rateLimitHitRef.current ? 20000 : 6000;
         timeoutId = setTimeout(loop, delay);
     };
-
     if (isLiveStreamMode) {
         loop();
     }
-
     return () => {
         clearTimeout(timeoutId);
     };
   }, [isLiveStreamMode, detectType, targetPrompt, prompts, currentModel, temperature, isThinkingEnabled]);
-
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !isLoading) {
@@ -355,132 +324,36 @@ export function Prompt() {
   };
 
   return (
-    <div className="flex grow flex-col gap-3">
-      <div className="flex justify-between items-center">
-        <div className="uppercase flex items-center gap-2">
-          模型：
+    <div className="flex flex-col gap-3 h-full">
+      {/* Control Bar */}
+      <div className="flex justify-between items-center text-[var(--text-color-secondary)] text-xs">
+        <div className="flex items-center gap-2">
+          <div className="uppercase tracking-wider font-bold">MODEL_CONFIG:</div>
           <select
             value={currentModel}
-            onChange={(e) => {
-              setSelectedModel(e.target.value);
-            }}
+            onChange={(e) => setSelectedModel(e.target.value)}
             disabled={isLoading && !isLiveStreamMode}
-            className="bg-[var(--input-color)] border border-[var(--border-color)] rounded-md p-1 text-sm normal-case font-mono">
-            <option value="gemini-2.5-flash">gemini-2.5-flash (极速)</option>
-            <option value="gemini-robotics-er-1.5-preview">
-              gemini-robotics-er-1.5-preview
-            </option>
+            className="bg-transparent border border-[var(--border-color)] text-[var(--text-color-primary)] py-1 px-2 text-xs">
+            <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (FAST)</option>
+            <option value="gemini-robotics-er-1.5-preview">GEMINI-ROBOTICS</option>
           </select>
         </div>
+        {responseTime && <div className="font-mono text-[var(--accent-color)]">{responseTime}</div>}
       </div>
 
-      <div className="flex flex-col gap-1 text-sm">
-        <label className="flex items-center gap-2 select-none">
+      <div className="flex gap-4 items-center text-xs text-[var(--text-color-secondary)]">
+         <label className="flex items-center gap-2 cursor-pointer hover:text-[var(--accent-color)]">
           <input
             type="checkbox"
             checked={isThinkingEnabled}
             onChange={(e) => setIsThinkingEnabled(e.target.checked)}
             disabled={isLoading && !isLiveStreamMode}
+            className="w-3 h-3"
           />
-          启用思考
+          ENABLE THINKING
         </label>
-        <div className="text-xs pl-6 text-[var(--text-color-secondary)]">
-          思考功能可提高模型处理任务的推理能力，但在简单的定位任务中可能效果不佳。对于简单任务，禁用思考功能可提高速度并可能获得更好的结果。
-        </div>
-      </div>
-
-      <div className="border-b my-1 border-[var(--border-color)]"></div>
-
-      <div className="uppercase">提示词</div>
-
-      <div className="w-full flex flex-col">
-        {is2d ? (
-          <div className="flex flex-col gap-2">
-            <div>检测物品：</div>
-            <textarea
-              className="w-full bg-[var(--input-color)] rounded-lg resize-none p-4"
-              placeholder="例如：汽车，树木"
-              rows={1}
-              value={targetPrompt}
-              onChange={(e) => setTargetPrompt(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading && !isLiveStreamMode}
-            />
-          </div>
-        ) : detectType === 'Segmentation masks' ? (
-          <div className="flex flex-col gap-2">
-            <div>{prompts[detectType][0]}</div>
-            <textarea
-              className="w-full bg-[var(--input-color)] rounded-lg resize-none p-4"
-              placeholder="要分割什么？"
-              rows={1}
-              value={prompts[detectType][1]}
-              onChange={(e) => {
-                const value = e.target.value;
-                const newPromptsState = {...prompts};
-                if (!newPromptsState[detectType])
-                  newPromptsState[detectType] = ['', '', ''];
-                newPromptsState[detectType][1] = value;
-                setPrompts(newPromptsState);
-              }}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading && !isLiveStreamMode}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <div>{prompts[detectType]?.[0]}</div>
-            <textarea
-              className="w-full bg-[var(--input-color)] rounded-lg resize-none p-4"
-              placeholder="您想检测什么样的物品？"
-              rows={1}
-              value={prompts[detectType]?.[1] ?? ''}
-              onChange={(e) => {
-                const value = e.target.value;
-                const newPromptsState = {...prompts};
-                if (!newPromptsState[detectType])
-                  newPromptsState[detectType] = ['', '', ''];
-                newPromptsState[detectType][1] = value;
-                setPrompts(newPromptsState);
-              }}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading && !isLiveStreamMode}
-            />
-          </div>
-        )}
-      </div>
-      <div className="flex justify-between gap-3">
-        <button
-          className={`bg-[#3B68FF] px-12 !text-white !border-none flex items-center justify-center ${isLoading && !isLiveStreamMode || (!imageSrc && !isLiveStreamMode) ? 'opacity-50 cursor-not-allowed' : ''}`}
-          onClick={handleSend}
-          disabled={isLoading && !isLiveStreamMode || (!imageSrc && !isLiveStreamMode)}>
-          {isLoading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {isLiveStreamMode ? '分析中...' : '发送中...'}
-            </>
-          ) : (
-            isLiveStreamMode ? '分析暂停' : '发送'
-          )}
-        </button>
         <label className="flex items-center gap-2">
-          温度：
+          TEMP: {temperature}
           <input
             type="range"
             min="0"
@@ -489,13 +362,67 @@ export function Prompt() {
             value={temperature}
             onChange={(e) => setTemperature(Number(e.target.value))}
             disabled={isLoading && !isLiveStreamMode}
+            className="w-16 h-1"
           />
-          {temperature}
         </label>
       </div>
-      {responseTime && (
-        <div className="text-sm text-gray-500 mt-2">{responseTime}</div>
-      )}
+
+      {/* Prompt Area */}
+      <div className="flex flex-col grow gap-2">
+        <div className="uppercase text-xs font-bold text-[var(--text-color-secondary)] tracking-widest">
+            {is2d ? 'Target Object' : 'Instruction'}
+        </div>
+        <div className="flex gap-3 items-stretch grow">
+            <div className="grow relative group">
+                {/* Decoration corners */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[var(--accent-color)] opacity-50"></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[var(--accent-color)] opacity-50"></div>
+                
+                <textarea
+                className="w-full h-full bg-[var(--input-bg)] border border-[var(--border-color)] p-3 text-sm font-mono resize-none focus:border-[var(--accent-color)] transition-colors"
+                placeholder={is2d ? "e.g. car, bottle" : "Describe what to detect..."}
+                value={is2d ? targetPrompt : (detectType === 'Segmentation masks' ? prompts[detectType][1] : (prompts[detectType]?.[1] ?? ''))}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    if(is2d) {
+                        setTargetPrompt(val);
+                    } else {
+                        const newPrompts = {...prompts};
+                        if (!newPrompts[detectType]) newPrompts[detectType] = ['', '', ''];
+                        newPrompts[detectType][1] = val;
+                        setPrompts(newPrompts);
+                    }
+                }}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading && !isLiveStreamMode}
+                />
+            </div>
+
+            <button
+            className={`primary-action w-24 md:w-32 flex-col gap-1 ${isLoading && !isLiveStreamMode ? 'opacity-70' : ''}`}
+            onClick={handleSend}
+            disabled={isLoading && !isLiveStreamMode || (!imageSrc && !isLiveStreamMode)}>
+            {isLoading ? (
+                <>
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mb-1"></div>
+                <div className="text-[10px]">PROCESSING</div>
+                </>
+            ) : (
+                isLiveStreamMode ? (
+                    <>
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mb-1"></div>
+                    <div>STOP</div>
+                    </>
+                ) : (
+                    <>
+                    <div className="text-lg">RUN</div>
+                    <div className="text-[10px] font-normal tracking-widest">EXECUTE</div>
+                    </>
+                )
+            )}
+            </button>
+        </div>
+      </div>
     </div>
   );
 }

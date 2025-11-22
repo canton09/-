@@ -32,27 +32,41 @@ function App() {
   const [initFinished] = useAtom(InitFinishedAtom);
 
   useEffect(() => {
-    if (!window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.classList.remove('dark');
-    }
+    // Enforce dark mode for tech theme
+    document.documentElement.classList.add('dark');
   }, []);
 
   return (
-    <div className="flex flex-col h-[100dvh]">
-      <div className="flex grow flex-col border-b overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-[var(--bg-color)] text-[var(--text-color-primary)] overflow-hidden">
+      {/* Main Viewport Area */}
+      <div className="flex grow flex-col relative overflow-hidden">
         <TopBar />
-        <div className="flex grow overflow-hidden">
+        <div className="flex grow relative overflow-hidden bg-[radial-gradient(circle_at_center,_rgba(0,243,255,0.05)_0%,_transparent_70%)]">
           {initFinished ? <Content /> : null}
+          
+          {/* Grid Overlay Effect */}
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(0,243,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.02)_1px,transparent_1px)] bg-[length:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"></div>
         </div>
         <ExtraModeControls />
       </div>
-      <div className="flex shrink-0 w-full overflow-auto py-6 px-5 gap-6 lg:items-start">
-        <div className="flex flex-col lg:flex-col gap-6 items-center border-r pr-5">
-          <SideControls />
-        </div>
-        <div className="flex flex-row gap-6 grow">
-          <DetectTypeSelector />
-          <Prompt />
+
+      {/* Bottom Command Center Panel */}
+      <div className="flex flex-col md:flex-row shrink-0 w-full z-20 tech-panel border-t border-[var(--border-color)] shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col md:flex-row w-full max-w-7xl mx-auto p-4 gap-4">
+            {/* Control Group 1: Tools (Camera/Upload/Live) */}
+            <div className="flex flex-row md:flex-col gap-3 items-center justify-between md:justify-start md:border-r border-b md:border-b-0 border-[var(--border-color)] md:pr-4 pb-4 md:pb-0 shrink-0">
+                <SideControls />
+            </div>
+
+            {/* Control Group 2: Mode Selector */}
+            <div className="flex flex-col shrink-0 md:w-48 border-b md:border-b-0 md:border-r border-[var(--border-color)] md:pr-4 pb-4 md:pb-0">
+                 <DetectTypeSelector />
+            </div>
+
+            {/* Control Group 3: Prompt & Execute */}
+            <div className="flex grow min-w-0">
+                <Prompt />
+            </div>
         </div>
       </div>
     </div>

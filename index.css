@@ -1,41 +1,144 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap");
+
+:root {
+  --bg-color: #030508;
+  --bg-panel: rgba(10, 15, 20, 0.7);
+  --accent-color: #00f3ff;
+  --accent-glow: rgba(0, 243, 255, 0.2);
+  --border-color: rgba(0, 243, 255, 0.15);
+  --text-color-primary: #e0f7ff;
+  --text-color-secondary: #5c8a99;
+  --text-size-large: 18px;
+  --text-size-medium: 14px;
+  --text-size-small: 11px;
+  --box-radius: 2px;
+  --input-bg: rgba(0, 10, 20, 0.8);
+  --font-mono: "Space Mono", monospace;
+  --font-display: "Rajdhani", sans-serif;
+}
 
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
 body {
   font-size: 13px;
   background-color: var(--bg-color);
   color: var(--text-color-primary);
+  font-family: var(--font-mono);
+  background-image: 
+    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-input, select {
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a2e33;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* Inputs */
+input, select, textarea {
   accent-color: var(--accent-color);
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--accent-color) !important;
+  font-family: var(--font-mono) !important;
+  border-radius: 0px !important;
+  transition: all 0.3s ease;
 }
 
-input[type="text"],
-textarea {
-  color: var(--text-color-primary);
-  border: 1px solid var(--border-color);
-}
-
-input[type="text"]:focus,
-textarea:focus {
-  border-color: var(--accent-color);
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 10px var(--accent-glow);
   outline: none;
 }
 
-.border,
-.border-l,
-.border-t,
-.border-b,
-.border-r {
-  border-color: var(--border-color);
+input::placeholder, textarea::placeholder {
+  color: var(--text-color-secondary);
 }
+
+/* Buttons */
+button, .button {
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  color: var(--accent-color);
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid var(--border-color);
+  padding: 12px 20px;
+  border-radius: 0px; /* Sharp tech corners */
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+}
+
+button:hover, .button:hover {
+  background: rgba(0, 243, 255, 0.1);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 15px var(--accent-glow);
+  text-shadow: 0 0 5px var(--accent-color);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+/* Special Buttons */
+button.primary-action {
+  background: var(--accent-color);
+  color: #000;
+  font-weight: 800;
+  border: none;
+}
+button.primary-action:hover {
+  background: #fff;
+  box-shadow: 0 0 20px var(--accent-color);
+}
+
+/* Bounding Boxes */
+.bbox {
+  box-shadow: 0 0 4px var(--accent-color), inset 0 0 4px var(--accent-color);
+}
+.bbox::before, .bbox::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--accent-color);
+  transition: all 0.2s;
+}
+.bbox::before { top: -1px; left: -1px; }
+.bbox::after { bottom: -1px; right: -1px; }
 
 .hide-box .bbox {
   opacity: 0;
@@ -46,108 +149,18 @@ textarea:focus {
   z-index: 1;
 }
 
-:root {
-  --bg-color: #F3F3F6;
-  --accent-color: #2872E3;
-  --border-color: #C6C6C9;
-  --box-color: #141619;
-  --text-color-primary: #1E1E1E;
-  --text-color-secondary: #888D8F;
-  --text-size-large: 18px;
-  --text-size-medium: 14px;
-  --text-size-small: 11px;
-  --box-radius: 8px;
-  --input-color: #F9F9FC;
-  font-family: "Space Mono", monospace;
-  font-weight: 400;
-  font-size: 14px;
-  color: var(--text-color-primary);
-  background-color: var(--bg-color);
-}
-
-.dark {
-  --bg-color: #1C1F21;
-  --accent-color: #7FBBFF;
-  --border-color: #37393c;
-  --box-color: #141619;
-  --text-color-primary: #fff;
-  --text-color-secondary: #8c8d8e;
-  --input-color: #404547;
-  color: var(--text-color-primary);
-  background-color: var(--bg-color);
-  color-scheme: dark;
-}
-
-main {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-button, .button {
-  appearance: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  color: var(--text-color-primary);
+/* Utilities */
+.tech-border {
   border: 1px solid var(--border-color);
-  padding: 14px 20px;
-  border-radius: var(--box-radius);
-  min-height: 56px;
 }
 
-button.secondary {
-  padding: 0px 16px;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
+.tech-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-color);
 }
 
-button:hover, .button:hover {
-  border-color: var(--accent-color);
-}
-
-a {
-  cursor: pointer;
-  color: var(--text-color-primary);
-  text-decoration: underline var(--accent-color);
-}
-
-a:hover {
-  text-decoration-color: var(--text-color-primary);
-}
-
-input[type="text"] {
-  appearance: none;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  color: var(--text-color-primary);
-  border: none;
-  padding: 14px 18px;
-}
-
-input[type="text"]::placeholder {
-  color: var(--text-color-secondary);
-}
-
-input[type="range"] {
-  accent-color: var(--accent-color);
-}
-
-
-.box {
-  border-radius: var(--box-radius);
-  background: var(--box-color);
-  padding: 28px 42px;
-  font-size: var(--text-size-large);
-  margin: 30px 0;
-}
-
-.box-caption {
-  color: var(--bg-color);
-  background: var(--accent-color);
-  border-radius: var(--box-radius);
-  padding: 14px 28px;
-  max-width: 340px;
+.glow-text {
+  text-shadow: 0 0 8px var(--accent-glow);
 }

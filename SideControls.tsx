@@ -52,7 +52,7 @@ export function SideControls() {
       setIsCameraOpen(true);
     } catch (error) {
       console.error('Error accessing camera:', error);
-      alert('无法访问摄像头，请确保已授予权限。');
+      alert('Camera access denied.');
     }
   };
 
@@ -93,7 +93,6 @@ export function SideControls() {
     }
   }, [isCameraOpen, stream]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (stream) {
@@ -103,96 +102,77 @@ export function SideControls() {
   }, [stream]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <label className="flex items-center button bg-[#3B68FF] px-12 !text-white !border-none">
-        <input
-          className="hidden"
-          type="file"
-          accept=".jpg, .jpeg, .png, .webp"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                resetState();
-                setIsLiveStreamMode(false);
-                setImageSrc(e.target?.result as string);
-                setIsUploadedImage(true);
-                setImageSent(false);
-                setBumpSession((prev) => prev + 1);
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
-        />
-        <div className="w-full text-center">上传图片</div>
-      </label>
+    <>
+      <div className="mb-2 text-xs font-bold text-[var(--text-color-secondary)] tracking-widest uppercase hidden md:block">INPUT</div>
+      <div className="flex flex-row md:flex-col gap-2 w-full">
+        {/* Upload Button */}
+        <label className="button w-full hover:text-[var(--accent-color)] group" title="Upload Image">
+          <input
+            className="hidden"
+            type="file"
+            accept=".jpg, .jpeg, .png, .webp"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  resetState();
+                  setIsLiveStreamMode(false);
+                  setImageSrc(e.target?.result as string);
+                  setIsUploadedImage(true);
+                  setImageSent(false);
+                  setBumpSession((prev) => prev + 1);
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 group-hover:scale-110 transition-transform">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+          </svg>
+          <span className="ml-2 text-xs hidden md:inline">UPLOAD</span>
+        </label>
 
-      <button
-        className={`button flex justify-center items-center gap-2 ${isLiveStreamMode ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-color)]'}`}
-        onClick={() => {
-            if (isLiveStreamMode) {
-                setIsLiveStreamMode(false);
-            } else {
-                resetState();
-                setIsLiveStreamMode(true);
-                setIsCameraOpen(false); // Close snapshot modal if open
-            }
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-            <path d="M12 9a3.75 3.75 0 1 0 0 7.5A3.75 3.75 0 0 0 12 9Z" />
-            <path fillRule="evenodd" d="M9.344 3.071a4.993 4.993 0 0 1 5.312 0l.208.107a.652.652 0 0 1 .324.59v2.461c0 .526-.205 1.036-.57 1.408a6.243 6.243 0 0 1-5.236 0 2.001 2.001 0 0 0-.57-1.408V3.768a.65.65 0 0 1 .324-.59l.208-.107ZM16.5 6.5h-9a6.5 6.5 0 0 0-6.5 6.5v1.5a6.5 6.5 0 0 0 6.5 6.5h9a6.5 6.5 0 0 0 6.5-6.5v-1.5a6.5 6.5 0 0 0-6.5-6.5Z" clipRule="evenodd" />
-        </svg>
-        <div>{isLiveStreamMode ? '停止实时分析' : '实时自动分析'}</div>
-      </button>
-
-      <button
-        className="button bg-[var(--bg-color)] flex justify-center items-center gap-2"
-        onClick={startCamera}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5">
-          <path d="M4.5 4.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h8.25a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3H4.5ZM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06Z" />
-        </svg>
-        <div>拍照</div>
-      </button>
-
-      <div className="hidden">
+        {/* Live Mode Toggle */}
         <button
-          className="button flex gap-3 justify-center items-center"
+          className={`button w-full group ${isLiveStreamMode ? '!border-[var(--accent-color)] !text-[var(--accent-color)] shadow-[0_0_10px_var(--accent-glow)]' : ''}`}
+          title="Live Stream"
           onClick={() => {
-            setDrawMode(!drawMode);
+              if (isLiveStreamMode) {
+                  setIsLiveStreamMode(false);
+              } else {
+                  resetState();
+                  setIsLiveStreamMode(true);
+                  setIsCameraOpen(false);
+              }
           }}>
-          <div className="text-lg"> 🎨</div>
-          <div>Draw on image</div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 group-hover:scale-110 transition-transform ${isLiveStreamMode ? 'animate-pulse' : ''}`}>
+             <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+          <span className="ml-2 text-xs hidden md:inline">LIVE</span>
+        </button>
+
+        {/* Camera Snapshot */}
+        <button
+          className="button w-full group"
+          title="Take Snapshot"
+          onClick={startCamera}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 group-hover:scale-110 transition-transform">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+          </svg>
+          <span className="ml-2 text-xs hidden md:inline">SNAP</span>
         </button>
       </div>
 
       {isCameraOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="bg-[var(--bg-color)] p-4 rounded-lg max-w-2xl w-full flex flex-col gap-4 relative shadow-2xl border border-[var(--border-color)]">
-            <button
-              onClick={stopCamera}
-              className="absolute top-2 right-2 p-2 rounded-full bg-[var(--input-color)] hover:bg-[var(--border-color)] z-10"
-              title="Close camera">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18 18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <h3 className="text-lg font-bold text-center mt-2">拍照</h3>
-            <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center aspect-[4/3]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+          <div className="tech-panel p-1 max-w-lg w-full flex flex-col gap-4 relative shadow-[0_0_30px_rgba(0,243,255,0.2)] border border-[var(--accent-color)]">
+            <div className="flex justify-between items-center p-3 bg-[rgba(0,243,255,0.1)]">
+                <h3 className="text-sm font-bold tracking-widest text-[var(--accent-color)] uppercase">Camera Feed</h3>
+                <button onClick={stopCamera} className="!p-1 !min-h-0 border-none hover:text-white text-[var(--accent-color)]">✕</button>
+            </div>
+            <div className="relative bg-black overflow-hidden aspect-[4/3]">
               <video
                 ref={videoRef}
                 autoPlay
@@ -200,32 +180,20 @@ export function SideControls() {
                 muted
                 className="w-full h-full object-contain"
               />
+              {/* Crosshair Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                  <div className="w-8 h-8 border-2 border-[var(--accent-color)] rounded-full"></div>
+                  <div className="absolute w-full h-[1px] bg-[var(--accent-color)]"></div>
+                  <div className="absolute h-full w-[1px] bg-[var(--accent-color)]"></div>
+              </div>
             </div>
-            <div className="flex justify-center gap-4 pt-2">
-              <button onClick={stopCamera} className="button secondary">
-                取消
-              </button>
-              <button
-                onClick={captureImage}
-                className="button bg-[#3B68FF] !text-white !border-none flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5">
-                  <path d="M12 9a3.75 3.75 0 1 0 0 7.5A3.75 3.75 0 0 0 12 9Z" />
-                  <path
-                    fillRule="evenodd"
-                    d="M9.344 3.071a4.993 4.993 0 0 1 5.312 0l.208.107a.652.652 0 0 1 .324.59v2.461c0 .526-.205 1.036-.57 1.408a6.243 6.243 0 0 1-5.236 0 2.001 2.001 0 0 0-.57-1.408V3.768a.65.65 0 0 1 .324-.59l.208-.107ZM16.5 6.5h-9a6.5 6.5 0 0 0-6.5 6.5v1.5a6.5 6.5 0 0 0 6.5 6.5h9a6.5 6.5 0 0 0 6.5-6.5v-1.5a6.5 6.5 0 0 0-6.5-6.5Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                拍摄
-              </button>
+            <div className="flex justify-between p-4 pt-0 gap-4">
+              <button onClick={stopCamera} className="flex-1 text-xs">CANCEL</button>
+              <button onClick={captureImage} className="flex-1 primary-action text-xs">CAPTURE</button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
