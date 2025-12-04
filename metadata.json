@@ -1,5 +1,5 @@
 {
-  "name": "Robotics Spatial Understanding",
+  "name": "AI空间理解",
   "description": "An interactive demo of how Gemini provides robots with critical spatial understanding.",
   "requestFramePermissions": [
     "camera"

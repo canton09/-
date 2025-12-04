@@ -19,17 +19,57 @@
 // limitations under the License.
 
 import {useAtom} from 'jotai';
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Content} from './Content';
 import {DetectTypeSelector} from './DetectTypeSelector';
 import {ExtraModeControls} from './ExtraModeControls';
 import {Prompt} from './Prompt';
 import {SideControls} from './SideControls';
 import {TopBar} from './TopBar';
-import {InitFinishedAtom} from './atoms';
+import {ImageSrcAtom, InitFinishedAtom, IsLiveStreamModeAtom, IsUploadedImageAtom} from './atoms';
+import {imageOptions} from './consts';
+import {useResetState} from './hooks';
 
 function App() {
   const [initFinished] = useAtom(InitFinishedAtom);
+  const [isUploadedImage] = useAtom(IsUploadedImageAtom);
+  const [isLiveStreamMode] = useAtom(IsLiveStreamModeAtom);
+  const [, setImageSrc] = useAtom(ImageSrcAtom);
+  const resetState = useResetState();
+  
+  // Timer for random demo image rotation
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval>;
+
+    if (!isUploadedImage && !isLiveStreamMode) {
+      intervalId = setInterval(() => {
+        // Pick a random image from the 20 options
+        const randomIndex = Math.floor(Math.random() * imageOptions.length);
+        const nextImage = imageOptions[randomIndex];
+        
+        setImageSrc((current) => {
+            // Avoid setting the same image consecutively if possible
+            if (current === nextImage && imageOptions.length > 1) {
+                const nextIndex = (randomIndex + 1) % imageOptions.length;
+                return imageOptions[nextIndex];
+            }
+            return nextImage;
+        });
+        
+        // Optional: clear previous detection results when image changes automatically
+        // resetState(); 
+        // Note: We might NOT want to resetState() fully if we want to keep the "Scan" effect, 
+        // but typically a new image means we should clear old boxes.
+        resetState();
+
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isUploadedImage, isLiveStreamMode, setImageSrc, resetState]);
+
 
   useEffect(() => {
     // Enforce dark mode for tech theme

@@ -85,3 +85,5 @@ export const BoundingBoxes3DAtom = atom<any[]>([]);
 export const FovAtom = atom(75);
 
 export const IsLiveStreamModeAtom = atom(false);
+
+export const Is3DViewAtom = atom(false);

@@ -33,8 +33,8 @@ export function TopBar() {
     <div className="flex shrink-0 w-full items-center px-4 py-3 border-b border-[var(--border-color)] justify-between bg-[var(--bg-panel)] backdrop-blur-md z-30">
       <div className="flex gap-4 items-center">
          <div className="flex flex-col">
-            <h1 className="text-[var(--accent-color)] font-bold tracking-widest uppercase text-sm glow-text">Gemini Spatial</h1>
-            <div className="text-[10px] text-[var(--text-color-secondary)] tracking-widest">SYSTEM ONLINE</div>
+            <h1 className="text-[var(--accent-color)] font-bold tracking-widest uppercase text-sm glow-text">Gemini 空间智能</h1>
+            <div className="text-[10px] text-[var(--text-color-secondary)] tracking-widest">系统在线</div>
          </div>
       </div>
 
@@ -42,7 +42,7 @@ export function TopBar() {
         <button
           onClick={() => resetState()}
           className="!p-0 !min-h-0 !border-none bg-transparent text-[10px] text-[var(--text-color-secondary)] hover:text-white tracking-wider uppercase">
-          [ Reset Session ]
+          [ 重置会话 ]
         </button>
         
         {(detectType === '2D bounding boxes' || detectType === 'Segmentation masks') && (
@@ -57,7 +57,7 @@ export function TopBar() {
                 setRevealOnHoverMode(e.target.checked);
               }}
             />
-            <span className="text-[10px] uppercase tracking-wide text-[var(--text-color-secondary)] group-hover:text-[var(--accent-color)]">Hover Reveal</span>
+            <span className="text-[10px] uppercase tracking-wide text-[var(--text-color-secondary)] group-hover:text-[var(--accent-color)]">悬停显示</span>
           </label>
         )}
       </div>

@@ -282,18 +282,18 @@ export function Prompt() {
       if (errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
           rateLimitHitRef.current = true;
           if (!isLiveStreamMode) {
-            alert('API Quota Exceeded (429). Retrying automatically in live mode.');
+            alert('API配额已满 (429)。正在直播模式下自动重试。');
           }
       } else if (!isLiveStreamMode) {
         setResponseJson(
-            JSON.stringify({error: 'Error', details: errorMessage}, null, 2)
+            JSON.stringify({error: '错误', details: errorMessage}, null, 2)
         );
       }
     } finally {
       const endTime = performance.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
       if (!isLiveStreamMode) {
-        setResponseTime(`${duration}s`);
+        setResponseTime(`${duration}秒`);
       }
       setIsLoading(false);
     }
@@ -328,13 +328,13 @@ export function Prompt() {
       {/* Control Bar */}
       <div className="flex justify-between items-center text-[var(--text-color-secondary)] text-xs">
         <div className="flex items-center gap-2">
-          <div className="uppercase tracking-wider font-bold">MODEL_CONFIG:</div>
+          <div className="uppercase tracking-wider font-bold">模型配置:</div>
           <select
             value={currentModel}
             onChange={(e) => setSelectedModel(e.target.value)}
             disabled={isLoading && !isLiveStreamMode}
             className="bg-transparent border border-[var(--border-color)] text-[var(--text-color-primary)] py-1 px-2 text-xs">
-            <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (FAST)</option>
+            <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (极速)</option>
             <option value="gemini-robotics-er-1.5-preview">GEMINI-ROBOTICS</option>
           </select>
         </div>
@@ -350,10 +350,10 @@ export function Prompt() {
             disabled={isLoading && !isLiveStreamMode}
             className="w-3 h-3"
           />
-          ENABLE THINKING
+          启用思考
         </label>
         <label className="flex items-center gap-2">
-          TEMP: {temperature}
+          温度: {temperature}
           <input
             type="range"
             min="0"
@@ -370,7 +370,7 @@ export function Prompt() {
       {/* Prompt Area */}
       <div className="flex flex-col grow gap-2">
         <div className="uppercase text-xs font-bold text-[var(--text-color-secondary)] tracking-widest">
-            {is2d ? 'Target Object' : 'Instruction'}
+            {is2d ? '目标物体' : '提示词指令'}
         </div>
         <div className="flex gap-3 items-stretch grow">
             <div className="grow relative group">
@@ -380,7 +380,7 @@ export function Prompt() {
                 
                 <textarea
                 className="w-full h-full bg-[var(--input-bg)] border border-[var(--border-color)] p-3 text-sm font-mono resize-none focus:border-[var(--accent-color)] transition-colors"
-                placeholder={is2d ? "e.g. car, bottle" : "Describe what to detect..."}
+                placeholder={is2d ? "例如：汽车, 瓶子" : "描述要检测的内容..."}
                 value={is2d ? targetPrompt : (detectType === 'Segmentation masks' ? prompts[detectType][1] : (prompts[detectType]?.[1] ?? ''))}
                 onChange={(e) => {
                     const val = e.target.value;
@@ -405,18 +405,18 @@ export function Prompt() {
             {isLoading ? (
                 <>
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mb-1"></div>
-                <div className="text-[10px]">PROCESSING</div>
+                <div className="text-[10px]">处理中</div>
                 </>
             ) : (
                 isLiveStreamMode ? (
                     <>
                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mb-1"></div>
-                    <div>STOP</div>
+                    <div>停止</div>
                     </>
                 ) : (
                     <>
-                    <div className="text-lg">RUN</div>
-                    <div className="text-[10px] font-normal tracking-widest">EXECUTE</div>
+                    <div className="text-lg">运行</div>
+                    <div className="text-[10px] font-normal tracking-widest">执行</div>
                     </>
                 )
             )}

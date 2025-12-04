@@ -31,7 +31,7 @@ const TYPE_LABELS: Record<string, string> = {
 export function DetectTypeSelector() {
   return (
     <div className="flex flex-col h-full">
-      <div className="mb-2 text-xs font-bold text-[var(--text-color-secondary)] tracking-widest uppercase">分析模式 / MODE</div>
+      <div className="mb-2 text-xs font-bold text-[var(--text-color-secondary)] tracking-widest uppercase">分析模式</div>
       <div className="grid grid-cols-3 md:flex md:flex-col gap-2">
         {['2D bounding boxes', 'Segmentation masks', 'Points'].map((label) => (
           <SelectOption key={label} label={label} displayLabel={TYPE_LABELS[label]} />
